@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Supabase Cloud File Upload</title>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const SUPABASE_URL = "https://kqcvixdtdzvfrijcfvyx.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxY3ZpeGR0ZHp2ZnJpamNmdnl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE4OTU1NDgsImV4cCI6MjA3NzQ3MTU0OH0.rQozBqIErszWOAFGJEpUjO7xdSUqu7uQMB8YuWxYe8s";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    document.getElementById("fileUpload").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      const filePath = `uploads/${file.name}`;
+      const { data, error } = await supabase.storage.from("uploads").upload(filePath, file, {
+        upsert: true
+      });
+
+      if (error) {
+        document.getElementById("status").innerText = "❌ Upload failed: " + error.message;
+        return;
+      }
+
+      const { data: publicUrl } = supabase.storage.from("uploads").getPublicUrl(filePath);
+      document.getElementById("status").innerHTML = `✅ File uploaded! <br> 
+        <a href="${publicUrl.publicUrl}" target="_blank">View Uploaded File</a>`;
+    });
+  </script>
+</head>
+<body style="font-family: Arial; text-align:center; margin-top:50px;">
+  <h1>☁️ Cloud File Upload using Supabase</h1>
+  <input type="file" id="fileUpload" />
+  <p id="status"></p>
+</body>
+</html>
